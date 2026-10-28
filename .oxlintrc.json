@@ -1,0 +1,14 @@
+{
+  "plugins": ["react", "react-perf", "typescript", "unicorn", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "no-await-in-loop": "off",
+    "require-await": "off",
+    "preserve-caught-error": "error"
+  }
+}
