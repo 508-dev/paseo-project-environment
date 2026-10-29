@@ -1,12 +1,14 @@
 # Project environment
 
-A Paseo 0.13.2 plugin for saving project environment variables and using them in agent commands without reopening the agent when values change.
+Save project environment variables and let agents use them in commands without reopening the agent when values change.
 
 Install from Git:
 
 ```sh
 paseo plugin install git:https://github.com/508-dev/paseo-project-environment.git
 ```
+
+Requires Paseo `>=0.13.2 <0.14.0` and a macOS or Linux daemon.
 
 For local development:
 
