@@ -6,7 +6,7 @@ The plugin adds a **Project environment** panel and two agent tools. Agents can 
 
 ## Install
 
-Requires Paseo `>=0.13.2 <0.14.0` and a macOS or Linux daemon.
+Requires Paseo 0.13.2 or later and a macOS or Linux daemon.
 
 Enable plugins under **Settings → Plugins** on the host where your agents run, then install:
 

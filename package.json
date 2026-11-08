@@ -1,6 +1,6 @@
 {
   "name": "@508-dev/paseo-project-environment",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Project environment variables for agent commands",
   "repository": {
@@ -31,9 +31,9 @@
     "@modelcontextprotocol/sdk": "1.32.1"
   },
   "devDependencies": {
-    "@getpaseo/client": "0.13.2",
-    "@getpaseo/plugin": "0.13.2",
-    "@getpaseo/protocol": "0.13.2",
+    "@getpaseo/client": "0.15.3",
+    "@getpaseo/plugin": "0.15.3",
+    "@getpaseo/protocol": "0.15.3",
     "@tanstack/react-query": "^5.90.11",
     "@types/node": "^22.0.0",
     "@types/react": "~19.2.0",
