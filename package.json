@@ -1,6 +1,6 @@
 {
   "name": "@508-dev/paseo-project-environment",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "Project environment variables for agent commands",
   "repository": {

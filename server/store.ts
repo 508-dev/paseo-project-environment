@@ -1,13 +1,22 @@
 import { createHash, randomUUID } from "node:crypto";
 import { execFile } from "node:child_process";
-import { chmod, mkdir, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, readdir, realpath, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { z } from "zod";
-import { variableInput } from "../shared/environment";
+import { variableInput, variableMetadata } from "../shared/environment";
 
 const execFileAsync = promisify(execFile);
 const documentSchema = z.object({ variables: z.array(variableInput).max(256) });
+const metadataDocumentSchema = z.object({
+  directory: z.string().optional(),
+  variables: z.array(variableMetadata).max(256),
+});
+export interface StoredProjectMetadata {
+  scopeId: string;
+  directory: string | null;
+  variables: z.infer<typeof variableMetadata>[];
+}
 export type Variable = z.infer<typeof variableInput>;
 export interface ProjectScope {
   id: string;
@@ -67,12 +76,44 @@ export class EnvironmentStore {
   private writes = Promise.resolve();
   constructor(private directory: string) {}
 
-  async read(scope: ProjectScope): Promise<Variable[]> {
+  async read(scope: Pick<ProjectScope, "id">): Promise<Variable[]> {
     const data = await readJson(path.join(this.directory, `${scope.id}.json`));
     if (data === null) return [];
     const result = documentSchema.safeParse(data);
     if (!result.success) throw new Error("Project environment storage is invalid");
     return result.data.variables;
+  }
+
+  async readValue(scope: Pick<ProjectScope, "id">, name: string): Promise<string> {
+    const variable = (await this.read(scope)).find((entry) => entry.name === name);
+    if (!variable) throw new Error("The saved variable is no longer available");
+    return variable.value;
+  }
+
+  async catalogue(): Promise<StoredProjectMetadata[]> {
+    let files: string[];
+    try {
+      files = await readdir(this.directory);
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") return [];
+      throw new Error("Cannot list saved project variables", { cause: error });
+    }
+    const entries: StoredProjectMetadata[] = [];
+    for (const file of files.toSorted()) {
+      if (!/^[a-f0-9]{64}\.json$/.test(file)) continue;
+      const document = await readJson(path.join(this.directory, file));
+      if (document === null) continue;
+      // This projection strips values before anything enters the searchable catalogue.
+      const parsed = metadataDocumentSchema.safeParse(document);
+      if (!parsed.success) throw new Error("Saved variable metadata is invalid");
+      if (!parsed.data.variables.length) continue;
+      entries.push({
+        scopeId: file.slice(0, -5),
+        directory: parsed.data.directory ?? null,
+        variables: parsed.data.variables,
+      });
+    }
+    return entries;
   }
 
   async save(scope: ProjectScope, variable: Variable): Promise<void> {
@@ -95,7 +136,10 @@ export class EnvironmentStore {
   ): Promise<void> {
     const write = this.writes.then(async () => {
       const variables = update(await this.read(scope));
-      return privateWrite(path.join(this.directory, `${scope.id}.json`), { variables });
+      return privateWrite(path.join(this.directory, `${scope.id}.json`), {
+        directory: scope.cwd,
+        variables,
+      });
     });
     this.writes = write.catch(() => {});
     return write;

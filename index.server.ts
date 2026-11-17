@@ -1,8 +1,15 @@
 import type { PluginServerContext } from "@getpaseo/plugin/server";
 import { homedir } from "node:os";
 import path from "node:path";
-import { listVariables, saveVariable, removeVariable } from "./shared/environment";
+import {
+  listVariables,
+  saveVariable,
+  removeVariable,
+  readVariableValue,
+  variableCatalogue,
+} from "./shared/environment";
 import { EnvironmentBroker, toolInstructions } from "./server/broker";
+import { buildVariableCatalogue, readWorkspaceDirectory } from "./server/catalogue";
 import { projectScope } from "./server/store";
 
 export default function contribute(server: PluginServerContext) {
@@ -36,6 +43,28 @@ export default function contribute(server: PluginServerContext) {
   // Resume existing MCP connections at the same port after plugin/daemon reload.
   server.before("agent.session_open", async () => {
     await start();
+  });
+  server.handle(variableCatalogue, async (_input, { paseo }) => {
+    await start();
+    const [projects, workspaces] = await Promise.all([
+      paseo.projects.list(),
+      readWorkspaceDirectory(paseo),
+    ]);
+    return buildVariableCatalogue({
+      store: broker.store,
+      projects: projects.projects,
+      workspaces,
+      bindings: broker.scopes(),
+    });
+  });
+  server.handle(readVariableValue, async ({ target, name }, { paseo }) => {
+    await start();
+    if (target.kind === "project")
+      return { value: await broker.store.readValue({ id: target.scopeId }, name) };
+    const workspace = await paseo.workspaces.ref(target.workspaceId).refresh();
+    if (!workspace) throw new Error("Workspace is unavailable");
+    const scope = await projectScope(workspace.workspaceDirectory);
+    return { value: await broker.store.readValue(scope, name) };
   });
   server.handle(listVariables, async ({ workspaceId }, { paseo }) => {
     const workspace = await paseo.workspaces.ref(workspaceId).refresh();
