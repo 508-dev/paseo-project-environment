@@ -1,7 +1,13 @@
-import type { PaseoApi, PaseoProject, PaseoWorkspace } from "@getpaseo/client";
+import type { PluginHandlerContext } from "@getpaseo/plugin/server";
 import path from "node:path";
 import type { CatalogueProject } from "../shared/environment";
 import { EnvironmentStore, projectScope, type ProjectScope } from "./store";
+
+// Git installs omit dev dependencies, and the plugin compiler resolves type imports too.
+// Derive SDK shapes through the host-provided server contract instead of @getpaseo/client.
+type PaseoApi = PluginHandlerContext["paseo"];
+type PaseoProject = Awaited<ReturnType<PaseoApi["projects"]["list"]>>["projects"][number];
+type PaseoWorkspace = Awaited<ReturnType<PaseoApi["workspaces"]["list"]>>["entries"][number];
 
 export type ProjectReference = Pick<
   PaseoProject,
