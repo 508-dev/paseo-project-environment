@@ -1,5 +1,7 @@
 # Project environment
 
+Development continues in [508-dev/paseo-plugins](https://github.com/508-dev/paseo-plugins/tree/main/plugins/project-environment). This repository remains installable for existing sources. Read the [migration guide](https://github.com/508-dev/paseo-plugins/blob/main/docs/migration.md) before switching an existing installation.
+
 Save environment variables in Paseo and let your agents use them in commands and API requests. Add an API key once, describe what it is for, and ask an agent to use it without editing `.env` files or pasting the key into chat.
 
 The plugin adds a searchable **Environment variables** view, a **Project environment** workspace panel, and two agent tools. Agents can discover the names and descriptions of available variables, then run commands with the variables they need. Each command reads the latest saved values, so you can change a key without reopening the agent.
