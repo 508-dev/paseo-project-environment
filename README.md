@@ -25,7 +25,7 @@ You can also paste that Git source into **Settings → Plugins → Plugin source
 3. Under **Add variable**, enter its name, description, and value. For example:
    - **Name:** `STRIPE_API_KEY`
    - **Description:** `Stripe test-mode key for reading customers`
-   - **Value:** Paste your key into the masked value field.
+   - **Value:** Paste your key into the value field. Choose **Show value** to check your input and **Hide value** to mask it again.
 4. Select **Add variable**. The panel confirms the addition and lists the name and description. Values stay hidden until you choose **Reveal** or **Copy**.
 
 Variables belong to the project. Git worktrees of the same repository share them; separate non-Git directories have separate variables.
@@ -65,7 +65,7 @@ Use the environment command tool for commands that need saved variables. The age
 
 ## Change or remove a variable
 
-Open **Project environment**, find the saved variable, and choose **Replace**. The new-value and description fields open inside that variable's card. Choose **Save replacement** to apply the change or **Cancel** to discard it. A confirmation appears in the same card after saving. The separate **Add variable** form stays untouched.
+Open **Project environment**, find the saved variable, and choose **Replace**. The new-value and description fields open inside that variable's card. Choose **Show value** beside the new-value field to check what you typed. Choose **Save replacement** to apply the change or **Cancel** to discard it. A confirmation appears in the same card after saving. The separate **Add variable** form stays untouched.
 
 To delete a variable, choose **Remove**, then **Confirm remove** in its card. **Cancel** keeps it. A confirmation remains above the saved-variable list after deletion.
 
