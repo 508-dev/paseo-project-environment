@@ -4,7 +4,6 @@ import type { z } from "zod";
 type VariableInput = z.infer<typeof variableInput>;
 interface EditorActions {
   save(variable: VariableInput): Promise<void>;
-  remove(name: string): Promise<void>;
 }
 interface EditorState {
   name: string;
@@ -13,7 +12,6 @@ interface EditorState {
   revision: number;
   status: "idle" | "pending" | "saved" | "error";
   message: string;
-  removing: string | null;
 }
 
 export class EnvironmentEditor {
@@ -24,7 +22,6 @@ export class EnvironmentEditor {
     revision: 0,
     status: "idle",
     message: "",
-    removing: null,
   };
   private listeners = new Set<() => void>();
   constructor(private actions: EditorActions) {}
@@ -40,22 +37,10 @@ export class EnvironmentEditor {
     for (const listener of this.listeners) listener();
   }
   set(field: "name" | "description" | "value", value: string) {
+    if (this.state.status === "pending") return;
     this.publish({ [field]: value, status: "idle", message: "" });
   }
-  replace(name: string, description: string) {
-    this.publish({
-      name,
-      description,
-      value: "",
-      revision: this.state.revision + 1,
-      status: "idle",
-      message: "",
-    });
-  }
-  confirmRemove(name: string | null) {
-    this.publish({ removing: name });
-  }
-  async save() {
+  async save(existingNames: string[] = []) {
     if (this.state.status === "pending") return;
     const result = variableInput.safeParse(this.state);
     if (!result.success) {
@@ -63,6 +48,13 @@ export class EnvironmentEditor {
         status: "error",
         message:
           "Enter an uppercase variable name, a nonempty value (up to 16 KiB), and a description up to 500 characters.",
+      });
+      return;
+    }
+    if (existingNames.includes(result.data.name)) {
+      this.publish({
+        status: "error",
+        message: "That variable already exists. Use Replace on its card.",
       });
       return;
     }
@@ -79,27 +71,13 @@ export class EnvironmentEditor {
         description: "",
         status: "saved",
         revision: this.state.revision + 1,
-        message: "Saved. The next environment command will use this value.",
+        message: `${result.data.name} added. The next environment command will use it.`,
       });
     } catch {
       this.publish({
         status: "error",
         message: "Could not save. Re-enter the value and try again.",
       });
-    }
-  }
-  async remove(name: string) {
-    if (this.state.status === "pending" || this.state.removing !== name) return;
-    this.publish({ status: "pending", message: "Removing…" });
-    try {
-      await this.actions.remove(name);
-      this.publish({
-        status: "saved",
-        removing: null,
-        message: `${name} removed. Commands already running keep their environment.`,
-      });
-    } catch {
-      this.publish({ status: "error", message: "Could not remove this variable. Try again." });
     }
   }
 }

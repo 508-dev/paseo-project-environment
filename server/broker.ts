@@ -167,6 +167,10 @@ export class EnvironmentBroker {
     }
   }
 
+  scopes(): ProjectScope[] {
+    return this.state.bindings.map(({ scope }) => ({ ...scope }));
+  }
+
   async endpoint(scope: ProjectScope): Promise<string> {
     const change = this.changes.then(async () => {
       const existing = this.state.bindings.find(
