@@ -8,7 +8,7 @@ The plugin adds a searchable **Environment variables** view, a **Project environ
 
 ## Install
 
-Requires Paseo 0.13.2 or later and a macOS or Linux daemon.
+Requires Paseo 0.13.0 or later and a macOS or Linux daemon.
 
 Enable plugins under **Settings → Plugins** on the host where your agents run, then install:
 
